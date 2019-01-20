@@ -17,6 +17,17 @@ const client = new Discord.Client();
 
 //Setting up bot token
 const token = properties.get('token');
+const readline = require('readline');
+const {google} = require('googleapis');
+
+// If modifying these scopes, delete token.json.
+const SCOPES = ['https://www.googleapis.com/auth/calendar',
+                'https://www.googleapis.com/auth/calendar.events',
+                'https://www.googleapis.com/auth/calendar.settings.readonly'];
+// The file token.json stores the user's access and refresh tokens, and is
+// created automatically when the authorization flow completes for the first
+// time.
+const TOKEN_PATH = 'token.json';
 
 //Initalising ownerID
 var ownerID = properties.get('ownerID');
@@ -37,8 +48,8 @@ var dummy = {
     step: 1,
     name: 'dummy',
     textView: 'Value of %name% : %value%',
-    textPlus: ':white_check_mark: The pomodoro count has been incremented. New value : %value%.',
-    textMinus: ':white_check_mark: The pomodoro count has been decremented. New value : %value%.',
+    textPlus: ':white_check_mark: The pomodoro count has been incremented. New value : %value%. :arrow_up:',
+    textMinus: ':white_check_mark: The pomodoro count has been decremented. New value : %value%. :arrow_down:',
     textReset: 'The value of %name% has been reset to %value%.',
     textValue: 'The value of %name% has been set to %value%.',
     textLeaderboard: 'Pomodoro Challenge Leaderboard :',
@@ -55,13 +66,37 @@ var userLeaderboardDummy = {
 //Initialising counter file
 var counters = require('./counters.json');
 
-//Initialising pomodoro variables
+//Initialising Pomodoro variables
 var pomRunning = false;
 var breakRunning = false;
 var timeLeft;
 var timerID;
 var intervalID;
 
+//Initalising Calendar variables
+var credentials;
+var client_secret;
+var client_id;
+var redirect_uris;
+var auth;
+var calendar;
+
+fs.readFile('credentials.json', (err, content) => {
+  if (err) return console.log('Error loading client secret file:', err);
+  // Authorize a client with credentials, then call the Google Calendar API.
+  //authorize(JSON.parse(content), listEvents);
+  credentials = JSON.parse(content);
+  client_secret = credentials.installed.client_secret;
+  client_id = credentials.installed.client_id;
+  redirect_uris = credentials.installed.redirect_uris;
+  auth = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+  fs.readFile(TOKEN_PATH, (err, token) => {
+    if (err) return getAccessToken(auth, callback);
+    auth.setCredentials(JSON.parse(token));
+    //callback(auth);
+  });
+  calendar = google.calendar({version: 'v3', auth});
+});
 
 client.on('ready', () => {
     //Start-up Message
@@ -78,13 +113,6 @@ client.on('message', message => {
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const cmd = args.shift().toLowerCase();
 
-    /*
-    OLD COMMAND HANDLER
-    message.args = message.args.substring(prefix.length); // removes the prefix
-    message.args = message.args.replace(mentionFilter, ""); // TODO change the way this work to be able to handle roles aswell
-    var args = message.args.split(" ");
-    */
-
     function isOwner() {
       return message.author.id == ownerID;
     }
@@ -92,6 +120,40 @@ client.on('message', message => {
     //!raid, the link to provide a link to the Cuckoo Timer
     if (cmd === 'raid' || cmd === 'r') {
       message.channel.send("https://cuckoo.team/koa");
+    }
+
+    if (cmd === 'website' || cmd === 'w'){
+      message.channel.send("https://knightsofacademia.com");
+    }
+
+    //Function to give clan list
+    if (cmd === 'clans'){
+      message.channel.send(":crossed_swords: **Here is our list of KOA Clans!** :crossed_swords:\n\n:small_orange_diamond: **The Round Table:** All things Hard Mode by Alex\n:small_orange_diamond: **Bards of Academia:** All things music by poss\n:small_orange_diamond: **The Fiction Faction:** Creative Writing & Story Telling by Blue Demon\n"
+      + ":small_orange_diamond: **The Wolf Pack:** Data Science & all things STEM by QueenWolf\n:small_orange_diamond: **The Gathering:** Accountability by nurse4truth\n:small_orange_diamond: **The Clockwork Knights:** Productivity & Efficiency through the use of Systems by VonKobra\n:small_orange_diamond: **The Silver Tongues:** Language & Culture by MI6\n:small_orange_diamond: **The Students:** Academics & all things Education by Eric");
+    }
+
+    //Function to give application form for clans
+    if (cmd === 'apply'){
+      if(!args[0]){
+        message.channel.send("Please apply for a Clan with ``!apply <Clan Name>``.")
+      }
+      if (args[0] === 'theroundtable' || args[0] === 'trt' || args[0] === 'roundtable'  || args[0] === 'hardmode' || args[0] === 'hard' || args[0] === 'round' || ((args[0] === 'the') && (args[1] === 'round') && (args[2] === 'table'))){
+        message.channel.send("https://goo.gl/forms/m5onrVAaFc7RN1kg2");
+      } else if (args[0] === 'thebards' || args[0] === 'bards' || args[0] === 'bardsofacademia' || ((args[0] === 'the') && (args[1] === 'bards'))){
+        message.channel.send("https://goo.gl/forms/3csyULhB5aqCHjoB3");
+      } else if (args[0] === 'thefictionfaction' || args[0] === 'ff' || args[0] === 'fictionfaction' || ((args[0] === 'the') && (args[1] === 'fiction') && (args[2] === 'faction'))){
+        message.channel.send("https://docs.google.com/document/d/1KAPSiUMTpg3a6lzWCAJuqSxrA9-zzldYn_f35DJ_xXw/edit?usp=sharing");
+      } else if (args[0] === 'thewolfpack' || args[0] === 'wolfpack' || args[0] === 'twp' || ((args[0] === 'the') && (args[1] === 'wolf') && (args[2] === 'pack'))){
+        message.channel.send("https://goo.gl/forms/QJDWzppdgGsniPWG2");
+      } else if (args[0] === 'thegathering' || args[0] === 'gathering' || ((args[0] === 'the') && (args[1] === 'gathering'))){
+        message.channel.send("https://goo.gl/forms/69tZ0ovv6Asd32zg2");
+      } else if (args[0] === 'theclockworkknights' || args[0] === 'clockwork' || args[0] === 'clockwork knights' || ((args[0] === 'the') && (args[1] === 'clockwork') && (args[2] === 'knights'))){
+        message.channel.send("https://goo.gl/forms/5klpWjPVeCkRfdWF2");
+      } else if (args[0] === 'thesilvertongues' || args[0] === 'silvertongues' || args[0] === 'silver' || args[0] === 'tongues' || ((args[0] === 'the') && (args[1] === 'silver') && (args[2] === 'tongues'))){
+        message.channel.send("https://goo.gl/forms/GcPz3zG8kmh3ZJBw1");
+      } else if (args[0] === 'thestudents' || args[0] === 'students' || args[0] === 'study' || args[0] === 'studentsofkoa' || ((args[0] === 'the') && (args[1] === 'students'))){
+        message.channel.send("https://goo.gl/forms/mwHlk2Kj3kfC9Bfw1");
+      }
     }
 
     //!info, the KOA Glossary
@@ -114,13 +176,13 @@ client.on('message', message => {
         message.channel.send("The Guardians are the moderation team of KOA, responsible for keeping things civilised, helping out the community and welcoming new users to the fold."
         + " The current Guardians are:\n:small_orange_diamond: **Austin**\n:small_orange_diamond: **Blue Demon**\n:small_orange_diamond: **Eric**\n:small_orange_diamond: **hannahananaB**\n:small_orange_diamond: **mi6blk**\n:small_orange_diamond: **poss_**\n:small_orange_diamond: **Queen Wolf**");
       } else if (args[0] === 'diva'){
-        message.channel.send("Heresy.");
-      } else if (args[0] === 'botm'){
+        message.channel.send("Heresy. No doubt about it.");
+      } else if (args[0] === 'botm' || ((args[0] === 'book') && (args[1] === 'of') && (args[2] === 'the') && (args[3] === 'month'))){
         message.channel.send(":book:  **Book of the Month** :book:\n"
         + "The Book of the Month (BOTM) activity involves our BOTM Moderator posting polls for people to vote on what they want the next month's book to be,"
         + " that every member of the club will endeavour to read over the course of the month. Look forward to interesting discussion and listening to other people's perspectives on the book!"
         + " Feel free to check out #book-of-the-month for more info.")
-      } else if (args[0] === 'cotw'){
+      } else if (args[0] === 'cotw' || ((args[0] === 'challenge') && (args[1] === 'of') && (args[2] === 'the') && (args[3] === 'week'))){
         message.channel.send(":bow_and_arrow: **Challenge of the Week** :bow_and_arrow:\n"
         + "The Challenge of the Week (COTW) is a Habitica challenge voted on by the community, that changes every week."
         + " This can be a challenge that can ask you to do anything; make a reading habit, exercise every day, stay hydrated - but it's all done in the name of self-improvement and building yourself up."
@@ -128,33 +190,83 @@ client.on('message', message => {
       } else if (args[0] === '10kdream'){
         message.channel.send("The '10k dream' is a reference to an old server statistic that supposedly calculated that this discord server gets 10,000 messages per day on average,"
         + " something which doesn't seem to be happening right now. So we have committed ourselves to fulfilling 'the dream', and breaking through that 10,000 message/day ceiling, one message at a time.");
-      } else if (args[0] === 'ojas'){
-        message.channel.send("Where to even begin.");
       } else if (args[0] === 'sector' || args[0] === 'sectors'){
         message.channel.send("The Sectors are the areas of KOA devoted to the various academic fields, each led by their own Sector Leader. There are 6 KOA Sectors in total:\n"
         + ":small_orange_diamond: **The Arts** - led by Austin :art:\n:small_orange_diamond: **STEM** - led by ChristinaFox :straight_ruler:\n:small_orange_diamond: **Computer Science** - led by Neer :desktop:\n"
         + ":small_orange_diamond: **Hustle 'N' Bustle** - led by hannahananaB :necktie:\n:small_orange_diamond: **Social Sciences** - led by Eric :two_men_holding_hands:\n:small_orange_diamond: **Wellness** - led by QueenWolf :blush:");
       } else if (args[0] === 'habitashia'){
         message.channel.send("Please spell it correctly. It's really not that hard. H - A - B - I - T - I - C - A.");
+      } else if (args[0] === 'ghosting'){
+        message.channel.send("'Ghosting' is what happens when someone, usually through no fault of their own, becomes idle on the cuckoo tab and becomes invisble."
+        + " This means that while they are still 'in' the cuckoo, no one else can see them and their avatar will not display. To fix the issue, all you have to do is refresh the page.");
+      } else if (args[0] === 'cephil'){
+        message.channel.send("I'm pretty sure you mean Cowgirl?");
+      } else if (args[0] === 'poss'){
+        message.channel.send("If I could speak, I'd want a voice like poss.");
+      } else if (args[0] === 'alex'){
+        message.channel.send("Not quite Alexander the Great, but still pretty good.");
+      } else if (args[0] === 'pomodoro' || args[0] === 'pom'){
+        message.channel.send("A 'pom' or 'pomodoro' is simply a focused work session of 25 minutes. The 'Pomodoro Technique' involves alternating work periods of 25 minutes, with rest periods of 5 minutes. Every 4 work sessions, it's recommended to take a longer break of about 15 minutes.");
+      } else if (args[0] === 'kyr\'amlaar' || args[0] === 'kyramlar' || args[0] === 'kyramlaar'){
+        message.channel.send(":eye:");
+      } else if (args[0] === 'spaghetz'){
+        message.channel.send("Fun fact: Spaghetz' favourite food is spaghetti. No surprises there.");
+      } else if (args[0] === 'cassius'){
+        message.channel.send("Press F to pay respects.");
+      } else if (args[0] === 'elske'){
+        message.channel.send("Just about one of the nicest people you're going to meet on here.");
+      } else if (args[0] === 'ange'){
+        message.channel.send("Something a little fishy about that girl :thinking:");
+      } else if (args[0] === 'rex'){
+        message.channel.send("I really can't keep up with all of his name changes. This is the only page you're getting Rex.");
+      } else if (args[0] === 'citadel'){
+        message.channel.send("Citadel is the 'general' channel of KOA, used for general discussions that don't neccessarily fit into any other channels. If the conversation becomes more relevant to another channel or sector, you may be asked to move your discussion there and vice versa.");
+      } else if (args[0] === 'eric'){
+        message.channel.send("My developer and creator. Sure are times I'd like to give *him* an upgrade though :eyes:");
+      } else if (args[0] === 'austin'){
+        message.channel.send("The chillest dude you'll meet on the seven seas :sailboat:");
+      } else if (args[0] === 'fireside' || args[0] === 'firesidechat'){
+        message.channel.send("The monthly Fireside Chats are a new addition to the KOA event line-up, and they are monthly voice calls that allow the community to get to know each other better."
+        + " A survey will be done to try and find the optimal time for the event, and questions that will be up for discussion will be announced before the chat takes place.");
+      } else if (args[0] === 'xp'){
+        message.channel.send("On the KOA Server, members are awarded XP for talking in channels. Getting XP allows you to level up, and there are some roles that are only accessible by getting the required level. Keep in mind though, XP is off in #citadel, #bot-interaction, #music-room and #gaming.");
+      } else if (args[0] === '30pomdream'){
+        message.channel.send("The dream of being able to get 30 poms done in a single day, dawn to dusk. Do you have what it takes?");
+      } else if (args[0] === 'voting'){
+        message.channel.send("Voting on KOA is usually done through the use of reactions in #voting-hall. Polls are also released for the Challenge of the Week and Book of the Month, and when they happen, the link to them will be provided with the post.");
+      } else if (args[0] === 'ash'){
+        message.channel.send("If she ever tells you how old she is, feel blessed.");
+      } else if (args[0] === 'rebel'){
+        message.channel.send(":octopus:");
+      } else if (args[0] === 'rotmg'){
+        message.channel.send("Realm of the Mad God. A online multiplayer game that some members occasionally play together.");
       }
     }
 
     //!pom/!p, to start a pomodoro session
     if (cmd === 'p') {
       if(pomRunning){
-        message.channel.send(':x: There is already an active pomodoro!');
+        message.channel.send(':x: **Error:** There is already an active pomodoro!');
         return;
       } else if(breakRunning){
-        message.channel.send(':x: The break is still going!');
+        message.channel.send(':x: **Error:** The break is still going!');
         return;
       }
 
       if(cmd === 'p' && !args[0]){
         timer(25, 'pom', message)
       } else if (Number.isInteger(parseInt(args[0]))){
+        if(parseInt(args[0]) == 0){
+          message.channel.send(':x: **Error:** You cannot start a pom with a length of 0 minutes.');
+          return;
+        }
+        if(parseInt(args[0]) > 120){
+          message.channel.send(':x: **Error:** You cannot start a pom with a length of over 120 minutes.');
+          return;
+        }
         timer(parseInt(args[0]), 'pom', message);
       } else {
-        message.channel.send(':x: Error: use ``!pom X`` to start a pomodoro for X minutes.');
+        message.channel.send(':x: **Error:** use ``!pom X`` to start a pomodoro for X minutes.');
       }
 
     }
@@ -162,16 +274,24 @@ client.on('message', message => {
     //!break/!b, to start a break after a pom session
     if (cmd === 'break' || cmd === 'b') {
       if(pomRunning){
-        message.channel.send(':x: The pomodoro is still going!');
+        message.channel.send(':x: **Error:** The pomodoro is still going!');
         return;
       } else if(breakRunning){
-        message.channel.send(':x: There is already an active break!');
+        message.channel.send(':x: **Error:** There is already an active break!');
         return;
       }
 
       if(cmd === 'b' && !args[0]){
         timer(5, 'break', message)
       } else if (Number.isInteger(parseInt(args[0]))){
+        if(parseInt(args[0]) == 0){
+          message.channel.send(':x: **Error:** You cannot start a break with a length of 0 minutes.');
+          return;
+        }
+        if(parseInt(args[0]) > 30){
+          message.channel.send(':x: **Error:** You cannot start a break with a length of over 30 minutes.');
+          return;
+        }
         timer(parseInt(args[0]), 'break', message);
       } else {
         message.channel.send(':x: Error: use ``!break X`` to start a break for X minutes.');
@@ -190,14 +310,14 @@ client.on('message', message => {
         message.channel.send(':white_check_mark: **Successfully stopped the break.**');
         breakRunning = false;
       } else {
-        message.channel.send(':x: There is nothing active to stop right now.');
+        message.channel.send(':x: **Error:** There is nothing active to stop right now.');
       }
     }
 
     //!time/!t, to see how much time is left in the work session or the break
     if (cmd === 'time' || cmd === 't'){
       if(!pomRunning && !breakRunning){
-        message.channel.send(':x: There is no active session right now.');
+        message.channel.send(':x: **Error:** There is no active session right now.');
         return;
       }
       var mins = Math.floor(Math.round(timeLeft/1000)/60);
@@ -237,7 +357,7 @@ client.on('message', message => {
     //----------------------------------------------------------------
     if (cmd === 'addcounter' || cmd === 'ac') {
         if (args.length == 1) {
-          if(!message.member.roles.find("name", "Guardians")){
+          if(!isStaff(message.member)){
             message.channel.send(":x: **Error:** You don't have permission to use this command. Please contact a Guardian.");
             return;
           }
@@ -251,7 +371,7 @@ client.on('message', message => {
             }
         }
     } else if (cmd === 'delcounter' || cmd === 'dc') {
-        if(!message.member.roles.find("name", "Guardians")){
+        if(!isStaff(message.member)){
           message.channel.send(":x: **Error:** You don't have permission to use this command. Please contact a Guardian.");
           return;
         }
@@ -309,17 +429,17 @@ client.on('message', message => {
                 message.channel.send(getTextView(counterName));
             } else {
                 if (args[0].startsWith('+')) {
-                    if(!message.mentions.members.first() && !message.member.roles.find("name", "Guardians")){
+                    if(!message.mentions.members.first() && !isStaff(message.member)){
                       message.channel.send(":x: **Error:** Please make sure you tag yourself properly after the +. e.g. ``!pom + @Alex#8758``");
                       return;
                     }
-                    if(message.mentions.users.first() !== message.author && !message.member.roles.find("name", "Guardians")){
+                    if(message.mentions.users.first() !== message.author && !isStaff(message.member)){
                       message.channel.send(":x: **Error:** Please only add to your own count.");
                       return;
                     }
 
                     var length = args[0].length;
-                    if(length > 1 && !message.member.roles.find("name", "Guardians")){
+                    if(length > 1 && !isStaff(message.member)){
                       message.channel.send(":x: **Error:** You don't have permission to use this command. Please contact a Guardian.");
                       return;
                     }
@@ -329,7 +449,7 @@ client.on('message', message => {
                         message.channel.send("There was an error parsing your input.");
                     }
                 } else if (args[0].startsWith('-')) {
-                    if(!message.member.roles.find("name", "Guardians")){
+                    if(!isStaff(message.member)){
                       message.channel.send(":x: **Error:** You don't have permission to use this command. Please contact a Guardian.");
                       return;
                     }
@@ -340,7 +460,7 @@ client.on('message', message => {
                         message.channel.send("There was an error parsing your input.");
                     }
                 } else if (args[0] == 'reset') {
-                    if(!message.member.roles.find("name", "Guardians")){
+                    if(!isStaff(message.member)){
                       message.channel.send(":x: **Error:** You don't have permission to use this command. Please contact a Guardian.");
                       return;
                     }
@@ -396,9 +516,170 @@ client.on('message', message => {
             }
         }
     }
+
+    if(cmd === 'calendar' || cmd === 'cal'){
+
+      if(!args[0]){
+        message.channel.send("https://calendar.google.com/calendar/b/1?cid=a25pZ2h0c29mYWNhZGVtaWFAZ21haWwuY29t");
+        return;
+      }
+
+      if(args[0] === 'display' || args[0] === 'show'){
+        if(!args[1] || args[1] === 'help'){
+          message.channel.send("Type ``>cal display <X>`` to show the upcoming X events in the calendar.\n**e.g.** To show the first 5 events, ``>cal display 5``.");
+          return;
+        }
+
+        if(isNaN(args[1])){
+          message.channel.send(":x: **Error:** Invalid input. Please make sure you enter a number, after the display, e.g. ``>cal display 5``.");
+          return;
+        }
+
+        if(parseInt(args[1]) > 20){
+          message.channel.send(":x: **Error:** Please display 20 or less upcoming events.");
+          return;
+        }
+
+        calendar.events.list({
+          calendarId: 'knightsofacademia@gmail.com',
+          timeMin: (new Date()).toISOString(),
+          maxResults: args[1],
+          singleEvents: true,
+          orderBy: 'startTime',
+        }, (err, res) => {
+          if (err) return message.channel.send('The API returned an error: ' + err);
+          const events = res.data.items;
+          if (events.length) {
+            message.channel.send(`:calendar_spiral: **Upcoming ${args[1]} events on the KOA Calendar:** :calendar_spiral:\n`);
+            events.map((event, i) => {
+              const start = event.start.dateTime || event.start.date;
+              var time = ` **@** ${start.substring(11, 16)}`;
+              /*
+              var time = '';
+              if (start.substring(10,10) === 'T'){
+
+              }
+              */
+              if(start.substring(11, 16)){
+                message.channel.send(`${start.substring(5,10)} - ${event.summary}` + time);
+              } else {
+                message.channel.send(`${start.substring(5,10)} - ${event.summary}`);
+              }
+
+            });
+          } else {
+            message.channel.send('No upcoming events found.');
+          }
+        });
+      } else if(args[0] === 'add'){
+        if(!args[1] || args[1] === 'help'){
+          message.channel.send('**:calendar_spiral: CALENDAR ADDING FUNCTION :calendar_spiral:**\n\n'
+          + ':small_orange_diamond:To make an **all-day event:**\n``>cal add <Event Name>, YYYY, MM, DD``\n**e.g.** To make an event for the COTW Poll opening on the 17th of January 2019:\n ``>cal add COTW Polls Open, 2019, 01, 17``\n\n'
+          + ':small_orange_diamond:To make an **all-day event, with description:**\n``>cal add <Event Name>, YYYY, MM, DD, <description>``\n**e.g.** For the January BOTM opening on the 1st of January 2019:\n``>cal add Book of the Month, 2019, 01, 01, January BOTM Opens!``\n\n'
+          + ':small_orange_diamond:To make a **timed event on a day:**\n``>cal add <Event Name>, YYYY, MM, DD, <Start Time>, <End Time>``\n**e.g.** For the Fireside chat happening on the 20th of January 2019 at 3pm, for 3 hours:\n``>cal add Fireside Chat, 2019, 01, 20, 1500, 1800``\n\n'
+          + ':small_orange_diamond:To make a **timed event on a day, with description:**\n``>cal add <Event Name>, YYYY, MM, DD, <Start Time>, <End Time>, <description>``\n**e.g.** For the 30-minute Group Meditation session happening on the 15th of January 2019 at 7pm:\n``>cal add Meditation, 2019, 01, 15, 1900, 1930, Group Meditation Session``\n\n'
+          + 'Please ensure that there are commas between each argument, the date is entered properly (YYYY,MM,DD) and the Start Time and End Time are entered in 24-hour/military time.The description of the event is optional.');
+          return;
+        }
+        var data = message.content.substring(prefix.length + cmd.length + args[0].length + 2);
+        var arg = data.trim().split(',');
+
+        if(isNaN(arg[4]) || arg[4] === ''){
+          var startDate = arg[1].trim()+'-'+arg[2].trim()+'-'+arg[3].trim();
+          var endDate = arg[1].trim()+'-'+arg[2].trim()+'-'+arg[3].trim();
+          var desc = arg[4] ? arg[4].trim() : '';
+        } else {
+          var startTime = arg[1].trim()+'-'+arg[2].trim()+'-'+arg[3].trim()+'T'+arg[4].trim().substring(0,2)+':'+arg[4].trim().substring(2,4)+':00-06:00';
+          var endTime = arg[1].trim()+'-'+arg[2].trim()+'-'+arg[3].trim()+'T'+arg[5].trim().substring(0,2)+':'+arg[5].trim().substring(2,4)+':00-06:00';
+          var desc = arg[6] ? arg[6].trim() : '';
+        }
+
+        var newDateEvent = {
+          'summary': arg[0].trim(),
+          'description': desc,
+          'start': {
+            'date': startDate,
+            'timeZone': 'America/Chicago',
+          },
+          'end': {
+            'date': endDate,
+            'timeZone': 'America/Chicago',
+          },
+        };
+
+        var newTimeEvent = {
+          'summary': arg[0].trim(),
+          'description': desc,
+          'start': {
+            'dateTime': startTime,
+            'timeZone': 'America/Chicago',
+          },
+          'end': {
+            'dateTime': endTime,
+            'timeZone': 'America/Chicago',
+          },
+        };
+
+        if(isNaN(arg[4])){
+          calendar.events.insert({
+            auth: auth,
+            calendarId: 'knightsofacademia@gmail.com',
+            resource: newDateEvent,
+          }, function(err, newDateEvent) {
+            if (err) {
+              message.channel.send('There was an error contacting the Calendar service: ' + err);
+              return;
+            }
+          });
+        } else {
+          calendar.events.insert({
+            auth: auth,
+            calendarId: 'knightsofacademia@gmail.com',
+            resource: newTimeEvent,
+          }, function(err, newTimeEvent) {
+            if (err) {
+              message.channel.send('There was an error contacting the Calendar service: ' + err);
+              return;
+            }
+          });
+        }
+
+        if(isNaN(arg[4])){
+          message.channel.send(`:white_check_mark:**New event successfully created!**\n\n**Event Name:** ${newDateEvent.summary}\n**Date:** ${arg[1].trim()}-${arg[2].trim()}-${arg[3].trim()}\n**Start Time:** All Day\n**End Time:** All Day\n**Description:** ${desc}`);
+        } else {
+          message.channel.send(`:white_check_mark:**New event successfully created!**\n\n**Event Name:** ${newTimeEvent.summary}\n**Date:** ${arg[1].trim()}-${arg[2].trim()}-${arg[3].trim()}\n**Start Time:** ${arg[4]}\n**End Time:** ${arg[5]}\n**Description:** ${desc}`);
+        }
+
+      }
+    }
+});
+
+// Create an event listener for new guild members
+client.on('guildMemberAdd', member => {
+  member.addRole('535256871376781342');
+  // Send the message to a designated channel on a server:
+  const channel = member.guild.channels.find(ch => ch.name === 'erics-laboratory');
+  // Do nothing if the channel wasn't found on this server
+  if (!channel) return;
+  // Send the message, mentioning the member
+  channel.send(`:tada: **A new member has arrived!** :tada:\nWelcome to Knights of Academia ${member}!`);
+  member.send("**Welcome to Knights of Academia!**\n\nFirst things first, introduce yourself in #citadel! The community is excited to meet you :smile:\n\n"
+  + "Feel free to join us on our social media:\n:small_orange_diamond:**Habitica:** <https://habitica.com/groups/guild/e184b286-b369-46c9-ab55-054c3368af33>\n"
+  + ":small_orange_diamond:**Facebook:** <https://www.facebook.com/groups/KOAFoundation/>\n:small_orange_diamond:**Goodreads:** <https://www.goodreads.com/group/show/756579-knights-of-academia>\n\n"
+  + "If you have any questions about anything, please don't hesitate to ask someone on the server. Hope you enjoy your stay here! :tada:");
 });
 
 client.login(token);
+
+function isStaff(member){
+  if(member.roles.find("name", "Guardians")){
+    return true;
+  } else if (member.roles.find("name", "Architects")){
+    return true;
+  }
+  //get Alex's ID probably
+  return false;
+}
 
 function addCounter(id, title) {
     if (inputFilter.test(title) && title != "addcounter" && title != "delcounter" && title != "ac" && title != "dc") {
@@ -567,7 +848,7 @@ function timer(time, session, message){
     timerID = setTimeout(endBreak, time*60*1000);
     intervalID = setInterval(countdown, 1000);
   } else {
-    message.channel.send(":x: Something isn't right.");
+    message.channel.send(":x: **Error:** Something isn't right.");
   }
 
   function endPom(){
@@ -585,4 +866,81 @@ function timer(time, session, message){
     timeLeft = timeLeft - 1000;
   }
 
+}
+
+/**
+ * Create an OAuth2 client with the given credentials, and then execute the
+ * given callback function.
+ * @param {Object} credentials The authorization client credentials.
+ * @param {function} callback The callback to call with the authorized client.
+ */
+function authorize(credentials, callback) {
+  const {client_secret, client_id, redirect_uris} = credentials.installed;
+  const oAuth2Client = new google.auth.OAuth2(
+      client_id, client_secret, redirect_uris[0]);
+
+  // Check if we have previously stored a token.
+  fs.readFile(TOKEN_PATH, (err, token) => {
+    if (err) return getAccessToken(oAuth2Client, callback);
+    oAuth2Client.setCredentials(JSON.parse(token));
+    callback(oAuth2Client);
+  });
+}
+
+/**
+ * Get and store new token after prompting for user authorization, and then
+ * execute the given callback with the authorized OAuth2 client.
+ * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+ * @param {getEventsCallback} callback The callback for the authorized client.
+ */
+function getAccessToken(oAuth2Client, callback) {
+  const authUrl = oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+  });
+  console.log('Authorize this app by visiting this url:', authUrl);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  rl.question('Enter the code from that page here: ', (code) => {
+    rl.close();
+    oAuth2Client.getToken(code, (err, token) => {
+      if (err) return console.error('Error retrieving access token', err);
+      oAuth2Client.setCredentials(token);
+      // Store the token to disk for later program executions
+      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+        if (err) console.error(err);
+        console.log('Token stored to', TOKEN_PATH);
+      });
+      callback(oAuth2Client);
+    });
+  });
+}
+
+/**
+ * Lists the next 10 events on the user's primary calendar.
+ * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
+ */
+function listEvents(auth) {
+  const calendar = google.calendar({version: 'v3', auth});
+  calendar.events.list({
+    calendarId: 'knightsofacademia@gmail.com',
+    timeMin: (new Date()).toISOString(),
+    maxResults: 20,
+    singleEvents: true,
+    orderBy: 'startTime',
+  }, (err, res) => {
+    if (err) return console.log('The API returned an error: ' + err);
+    const events = res.data.items;
+    if (events.length) {
+      console.log('Upcoming 10 events:');
+      events.map((event, i) => {
+        const start = event.start.dateTime || event.start.date;
+        console.log(`${start} - ${event.summary}`);
+      });
+    } else {
+      console.log('No upcoming events found.');
+    }
+  });
 }
