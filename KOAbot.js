@@ -119,7 +119,8 @@ client.on('message', message => {
 
     //!raid, the link to provide a link to the Cuckoo Timer
     if (cmd === 'raid' || cmd === 'r') {
-      message.channel.send("https://cuckoo.team/koa");
+      message.channel.send("**RAAAAAAAAAAAAAAAAAAAID!** :crossed_swords:\nhttps://cuckoo.team/koa");
+      message.delete();
     }
 
     if (cmd === 'website' || cmd === 'w'){
@@ -132,27 +133,40 @@ client.on('message', message => {
       + ":small_orange_diamond: **The Wolf Pack:** Data Science & all things STEM by QueenWolf\n:small_orange_diamond: **The Gathering:** Accountability by nurse4truth\n:small_orange_diamond: **The Clockwork Knights:** Productivity & Efficiency through the use of Systems by VonKobra\n:small_orange_diamond: **The Silver Tongues:** Language & Culture by MI6\n:small_orange_diamond: **The Students:** Academics & all things Education by Eric");
     }
 
+    if (cmd === 'events'){
+      message.channel.send(":small_orange_diamond: **KOA EVENTS 2019** :small_orange_diamond:\n**January:** Fireside Chat\n**February:** Fireside Chat (TBA)\n**March:** Fireside Chat (TBA), Town Hall Meeting\n**April:** Fireside Chat (TBA)\n**May:** Fireside Chat (TBA)\n**June:** Fireside Chat (TBA), Town Hall Meeting\n"
+      + "**July:** Fireside Chat (TBA)\n**August:** Fireside Chat (TBA)\n**September:** Fireside Chat (TBA) Town Hall Meeting\n**October:** Fireside Chat (TBA)\n**November:** Fireside Chat (TBA)\n**December:** KOA Secret Santa, YearCompass, Fireside Chat (TBA), Town Hall Meeting");
+    }
+
+    if (cmd === 'opportunities'){
+      message.channel.send("We're always looking for new applicants to the leadership teams here on KOA and over on KOAI, so here's an idea of what roles you can apply for:\n\n__**KOA Staff Roles**__\n"
+      + ":small_orange_diamond: **Guardian:** The moderation team of KOA, responsible for keeping things civilised, helping out the community and welcoming new users to the fold.\n:small_orange_diamond: **Architect:** The minds that build KOA. These guys are responsible for planning and building new features, listening to suggestions from the community and doing their best to implement them in accordance with KOA's vision.\n"
+      + ":small_orange_diamond: **Website Team:** The team that works on the Knights of Academia website. If you've got any experience writing, editing or working in website development, this is your place to be.\n:small_orange_diamond: **Website Manager:** The leaders of the website team, responsible for staying on top of all facets of the website, and helping to make it flourish.\n"
+      + ":small_orange_diamond: **Sector Leader:** The leader of one of the Sectors of KOA. They aim to bring more attention to the Sector, get people talking and share relevant material and ideas.\n:small_orange_diamond: **Club Leader:** The leader of KOA special-interest groups called 'Clubs'. They facilitate discussion and engage with the other club members.\n\n"
+      + "__**KOAI Staff Roles**__\n:small_orange_diamond: **Keeper:** The moderation team of KOAI. Take care of all the staff and administrative matters, and also make sure people follow the rules.\n:small_orange_diamond: **Scholar:** If you're familiar with a language, and wouldn't mind helping out other people with it, or translating into or out of it, this is the role for you. Scholars are also present in staff discussions and assist the Keepers.\n\n"
+      + "All roles can be applied for using the appropriate form in #community-forms, and any questions about anything should be directed to your nearest Guardian. Good luck to all applicants! :tada:");
+    }
     //Function to give application form for clans
     if (cmd === 'apply'){
       if(!args[0]){
         message.channel.send("Please apply for a Clan with ``!apply <Clan Name>``.")
       }
       if (args[0] === 'theroundtable' || args[0] === 'trt' || args[0] === 'roundtable'  || args[0] === 'hardmode' || args[0] === 'hard' || args[0] === 'round' || ((args[0] === 'the') && (args[1] === 'round') && (args[2] === 'table'))){
-        message.channel.send("https://goo.gl/forms/m5onrVAaFc7RN1kg2");
+        message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/m5onrVAaFc7RN1kg2");
       } else if (args[0] === 'thebards' || args[0] === 'bards' || args[0] === 'bardsofacademia' || ((args[0] === 'the') && (args[1] === 'bards'))){
-        message.channel.send("https://goo.gl/forms/3csyULhB5aqCHjoB3");
-      } else if (args[0] === 'thefictionfaction' || args[0] === 'ff' || args[0] === 'fictionfaction' || ((args[0] === 'the') && (args[1] === 'fiction') && (args[2] === 'faction'))){
-        message.channel.send("https://docs.google.com/document/d/1KAPSiUMTpg3a6lzWCAJuqSxrA9-zzldYn_f35DJ_xXw/edit?usp=sharing");
+        message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/3csyULhB5aqCHjoB3");
+      } else if (args[0] === 'thefictionfaction' || args[0] === 'ff' || args[0] === 'fictionfaction' || args[0] === 'fiction' || ((args[0] === 'the') && (args[1] === 'fiction') && (args[2] === 'faction'))){
+        message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://docs.google.com/document/d/1KAPSiUMTpg3a6lzWCAJuqSxrA9-zzldYn_f35DJ_xXw/edit?usp=sharing");
       } else if (args[0] === 'thewolfpack' || args[0] === 'wolfpack' || args[0] === 'twp' || ((args[0] === 'the') && (args[1] === 'wolf') && (args[2] === 'pack'))){
-        message.channel.send("https://goo.gl/forms/QJDWzppdgGsniPWG2");
+        message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/QJDWzppdgGsniPWG2");
       } else if (args[0] === 'thegathering' || args[0] === 'gathering' || ((args[0] === 'the') && (args[1] === 'gathering'))){
-        message.channel.send("https://goo.gl/forms/69tZ0ovv6Asd32zg2");
+        message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/69tZ0ovv6Asd32zg2");
       } else if (args[0] === 'theclockworkknights' || args[0] === 'clockwork' || args[0] === 'clockwork knights' || ((args[0] === 'the') && (args[1] === 'clockwork') && (args[2] === 'knights'))){
-        message.channel.send("https://goo.gl/forms/5klpWjPVeCkRfdWF2");
+        message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/5klpWjPVeCkRfdWF2");
       } else if (args[0] === 'thesilvertongues' || args[0] === 'silvertongues' || args[0] === 'silver' || args[0] === 'tongues' || ((args[0] === 'the') && (args[1] === 'silver') && (args[2] === 'tongues'))){
-        message.channel.send("https://goo.gl/forms/GcPz3zG8kmh3ZJBw1");
+        message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/GcPz3zG8kmh3ZJBw1");
       } else if (args[0] === 'thestudents' || args[0] === 'students' || args[0] === 'study' || args[0] === 'studentsofkoa' || ((args[0] === 'the') && (args[1] === 'students'))){
-        message.channel.send("https://goo.gl/forms/mwHlk2Kj3kfC9Bfw1");
+        message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/mwHlk2Kj3kfC9Bfw1");
       }
     }
 
@@ -240,11 +254,21 @@ client.on('message', message => {
         message.channel.send(":octopus:");
       } else if (args[0] === 'rotmg'){
         message.channel.send("Realm of the Mad God. A online multiplayer game that some members occasionally play together.");
+      } else if (args[0] === 'opportunities'){
+        message.channel.send("We're always looking for new applicants to the leadership teams here on KOA and over on KOAI, so here's an idea of what roles you can apply for:\n\n__**KOA Staff Roles**__\n"
+        + ":small_orange_diamond: **Guardian:** The moderation team of KOA, responsible for keeping things civilised, helping out the community and welcoming new users to the fold.\n:small_orange_diamond: **Architect:** The minds that build KOA. These guys are responsible for planning and building new features, listening to suggestions from the community and doing their best to implement them in accordance with KOA's vision.\n"
+        + ":small_orange_diamond: **Website Team:** The team that works on the Knights of Academia website. If you've got any experience writing, editing or working in website development, this is your place to be.\n:small_orange_diamond: **Website Manager:** The leaders of the website team, responsible for staying on top of all facets of the website, and helping to make it flourish.\n"
+        + ":small_orange_diamond: **Sector Leader:** The leader of one of the Sectors of KOA. They aim to bring more attention to the Sector, get people talking and share relevant material and ideas.\n:small_orange_diamond: **Club Leader:** The leader of KOA special-interest groups called 'Clubs'. They facilitate discussion and engage with the other club members.\n\n"
+        + "__**KOAI Staff Roles**__\n:small_orange_diamond: **Keeper:** The moderation team of KOAI. Take care of all the staff and administrative matters, and also make sure people follow the rules.\n:small_orange_diamond: **Scholar:** If you're familiar with a language, and wouldn't mind helping out other people with it, or translating into or out of it, this is the role for you. Scholars are also present in staff discussions and assist the Keepers.\n\n"
+        + "All roles can be applied for using the appropriate form in #community-forms, and any questions about anything should be directed to your nearest Guardian. Good luck to all applicants! :tada:");
+      } else if (args[0] === 'events'){
+        message.channel.send(":small_orange_diamond: **KOA EVENTS 2019** :small_orange_diamond:\n**January:** Fireside Chat\n**February:** Fireside Chat (TBA)\n**March:** Fireside Chat (TBA), Town Hall Meeting\n**April:** Fireside Chat (TBA)\n**May:** Fireside Chat (TBA)\n**June:** Fireside Chat (TBA), Town Hall Meeting\n"
+        + "**July:** Fireside Chat (TBA)\n**August:** Fireside Chat (TBA)\n**September:** Fireside Chat (TBA) Town Hall Meeting\n**October:** Fireside Chat (TBA)\n**November:** Fireside Chat (TBA)\n**December:** KOA Secret Santa, YearCompass, Fireside Chat (TBA), Town Hall Meeting");
       }
     }
 
     //!pom/!p, to start a pomodoro session
-    if (cmd === 'p') {
+    if (cmd === 'p' || cmd === 'pomodoro') {
       if(pomRunning){
         message.channel.send(':x: **Error:** There is already an active pomodoro!');
         return;
@@ -439,10 +463,19 @@ client.on('message', message => {
                     }
 
                     var length = args[0].length;
-                    if(length > 1 && !isStaff(message.member)){
-                      message.channel.send(":x: **Error:** You don't have permission to use this command. Please contact a Guardian.");
+                    if(length > 2 && !isStaff(message.member)){
+                      message.channel.send(":x: **Error:** You don't have permission to add 10+ poms. Please contact a Guardian.");
                       return;
                     }
+
+                    if (!parseInt(args[0].substring(1)) && length > 1){
+                      message.channel.send(":x: **Error:** Please add poms using ``!pom + @<Username>``.");
+                      return;
+                    }
+
+                    // TODO:  make it so that people who fuck up spacing for multiple poms get hit with error message
+                    //no idea how to do that though :thonk:
+
                     if (setValue(counterName, length == 1 ? "1" : message.content.substring(cmd.length + 3, cmd.length + 2 + length), '+', message.mentions.users)) {
                         message.channel.send(getTextPlus(counterName));
                     } else {
@@ -517,7 +550,7 @@ client.on('message', message => {
         }
     }
 
-    if(cmd === 'calendar' || cmd === 'cal'){
+    if(cmd === 'calendar' || cmd === 'cal' || cmd === 'eventscalendar'){
 
       if(!args[0]){
         message.channel.send("https://calendar.google.com/calendar/b/1?cid=a25pZ2h0c29mYWNhZGVtaWFAZ21haWwuY29t");
@@ -554,12 +587,13 @@ client.on('message', message => {
             events.map((event, i) => {
               const start = event.start.dateTime || event.start.date;
               var time = ` **@** ${start.substring(11, 16)}`;
-              /*
-              var time = '';
-              if (start.substring(10,10) === 'T'){
 
+              if (parseInt(start.substring(11,13)) <= 12) {
+                time = time + 'am';
+              } else {
+                time = ` **@** ${parseInt(start.substring(11,13))-12}${start.substring(13,16)}pm`
               }
-              */
+
               if(start.substring(11, 16)){
                 message.channel.send(`${start.substring(5,10)} - ${event.summary}` + time);
               } else {
@@ -574,10 +608,10 @@ client.on('message', message => {
       } else if(args[0] === 'add'){
         if(!args[1] || args[1] === 'help'){
           message.channel.send('**:calendar_spiral: CALENDAR ADDING FUNCTION :calendar_spiral:**\n\n'
-          + ':small_orange_diamond:To make an **all-day event:**\n``>cal add <Event Name>, YYYY, MM, DD``\n**e.g.** To make an event for the COTW Poll opening on the 17th of January 2019:\n ``>cal add COTW Polls Open, 2019, 01, 17``\n\n'
-          + ':small_orange_diamond:To make an **all-day event, with description:**\n``>cal add <Event Name>, YYYY, MM, DD, <description>``\n**e.g.** For the January BOTM opening on the 1st of January 2019:\n``>cal add Book of the Month, 2019, 01, 01, January BOTM Opens!``\n\n'
-          + ':small_orange_diamond:To make a **timed event on a day:**\n``>cal add <Event Name>, YYYY, MM, DD, <Start Time>, <End Time>``\n**e.g.** For the Fireside chat happening on the 20th of January 2019 at 3pm, for 3 hours:\n``>cal add Fireside Chat, 2019, 01, 20, 1500, 1800``\n\n'
-          + ':small_orange_diamond:To make a **timed event on a day, with description:**\n``>cal add <Event Name>, YYYY, MM, DD, <Start Time>, <End Time>, <description>``\n**e.g.** For the 30-minute Group Meditation session happening on the 15th of January 2019 at 7pm:\n``>cal add Meditation, 2019, 01, 15, 1900, 1930, Group Meditation Session``\n\n'
+          + ':small_orange_diamond:To make an **all-day event:**\n``!cal add <Event Name>, YYYY, MM, DD``\n**e.g.** To make an event for the COTW Poll opening on the 17th of January 2019:\n ``!cal add COTW Polls Open, 2019, 01, 17``\n\n'
+          + ':small_orange_diamond:To make an **all-day event, with description:**\n``!cal add <Event Name>, YYYY, MM, DD, <description>``\n**e.g.** For the January BOTM opening on the 1st of January 2019:\n``!cal add Book of the Month, 2019, 01, 01, January BOTM Opens!``\n\n'
+          + ':small_orange_diamond:To make a **timed event on a day:**\n``!cal add <Event Name>, YYYY, MM, DD, <Start Time>, <End Time>``\n**e.g.** For the Fireside chat happening on the 20th of January 2019 at 3pm, for 3 hours:\n``!cal add Fireside Chat, 2019, 01, 20, 1500, 1800``\n\n'
+          + ':small_orange_diamond:To make a **timed event on a day, with description:**\n``!cal add <Event Name>, YYYY, MM, DD, <Start Time>, <End Time>, <description>``\n**e.g.** For the 30-minute Group Meditation session happening on the 15th of January 2019 at 7pm:\n``!cal add Meditation, 2019, 01, 15, 1900, 1930, Group Meditation Session``\n\n'
           + 'Please ensure that there are commas between each argument, the date is entered properly (YYYY,MM,DD) and the Start Time and End Time are entered in 24-hour/military time.The description of the event is optional.');
           return;
         }
@@ -656,6 +690,7 @@ client.on('message', message => {
 
 // Create an event listener for new guild members
 client.on('guildMemberAdd', member => {
+  //Adding initiate role
   member.addRole('535256871376781342');
   // Send the message to a designated channel on a server:
   const channel = member.guild.channels.find(ch => ch.name === 'erics-laboratory');
@@ -676,7 +711,10 @@ function isStaff(member){
     return true;
   } else if (member.roles.find("name", "Architects")){
     return true;
+  } else if (member.id === '183699552262422529'){
+    return true;
   }
+
   //get Alex's ID probably
   return false;
 }
