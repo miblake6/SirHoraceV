@@ -47,9 +47,9 @@ var dummy = {
     value: 0,
     step: 1,
     name: 'dummy',
-    textView: 'Value of %name% : %value%',
-    textPlus: ':white_check_mark: The pomodoro count has been incremented. New value : %value%. :arrow_up:',
-    textMinus: ':white_check_mark: The pomodoro count has been decremented. New value : %value%. :arrow_down:',
+    textView: 'Value of %name%: %value%',
+    textPlus: ':white_check_mark: The pomodoro count has been incremented. New value: %value%. :arrow_up:',
+    textMinus: ':white_check_mark: The pomodoro count has been decremented. New value: %value%. :arrow_down:',
     textReset: 'The value of %name% has been reset to %value%.',
     textValue: 'The value of %name% has been set to %value%.',
     textLeaderboard: 'Pomodoro Challenge Leaderboard :',
@@ -81,6 +81,12 @@ var redirect_uris;
 var auth;
 var calendar;
 
+//Variables that can change depending on actions on the server MAKE SURE TO KEEP THESE UPDATED
+var newsletterLink = 'https://knightsofacademia.com/weekly-sunday-newsletter-18/';
+var newsletterID = 18;
+var cotwLink = 'https://habitica.com/challenges/22b5e672-024e-4d89-883b-29dd7c8b6668';
+var cotwPoll = 'https://goo.gl/forms/RZ0uGxsoLZLMIqzl1';
+
 fs.readFile('credentials.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
   // Authorize a client with credentials, then call the Google Calendar API.
@@ -105,6 +111,79 @@ client.on('ready', () => {
 
 client.on('message', message => {
 
+    //Greeting reactions for people on citadel
+    if(message.channel.name === 'citadel'){
+      var messageText = message.content.toLowerCase();
+      if(messageText.includes('morning') && (messageText.includes('all') || messageText.includes('everyone') || messageText.includes('everybody') || messageText.includes('koa') || messageText.includes('knights'))){
+        message.react('🌞');
+        return;
+      }
+
+      if((messageText.includes('goodnight') || (messageText.includes('good') && messageText.includes('night'))) && (messageText.includes('all') || messageText.includes('everyone') || messageText.includes('everybody') || messageText.includes('koa'))){
+        message.react('🌙');
+        return;
+      }
+    }
+
+    //Rebel's Octopus reactions
+    if(message.member.id === '290582078104535041'){
+      if(Math.random() < 0.15){
+        message.react('🐙');
+      }
+    }
+
+    //Ash's 'Rightio' Old Chap reactions
+    if(message.member.id === '530296951141564428'){
+      if(message.content.toLowerCase().includes('rightio')){
+        message.react('👴');
+      }
+    }
+
+    /*
+    //Kitty's 'AYE' reactions
+    if(message.member.id === '463468673693384736'){
+      const words = message.content.toLowerCase().trim().split(/ +/g);
+      for(var num = 0; num < words.length; num++){
+        words[num] = words[num].trim();
+        if(words[num].startsWith('a') && words[num].includes('ay') && words[num].includes('ye') && words[num].endsWith('e') && Math.random() < 0.30){
+          message.react('🇦');
+          message.react('🇾');
+          message.react('🇪');
+        }
+      }
+    }
+    */
+
+    //COTW and COTW Poll Auto-Update Functions
+    if(message.channel.name === 'challenge-of-the-week' && (message.member.id === '183699552262422529' || message.member.id === '227944612650549260') && message.mentions.roles.first() && message.mentions.roles.first().name === 'Challengers of the Week'){
+      const words = message.content.trim().split(/ +/g);
+      for(var num = 0; num < words.length; num++){
+        if(words[num].includes('https://habitica.com/challenges/')){
+          cotwLink = words[num];
+          message.react('⚔');
+          return;
+        }
+        if(words[num].includes('https://goo.gl/') || words[num].includes('https://docs.google.com/forms/')){
+          cotwPoll = words[num];
+          message.react('529488205473644544');
+          return;
+        }
+      }
+    }
+
+    //Newsletter Auto-Update Function
+    if(message.channel.name === 'citadel' && message.content.includes('newsletter') && (message.member.id === '183699552262422529' || message.member.id === '227944612650549260')){
+      const words = message.content.trim().split(/ +/g);
+      for(var num = 0; num < words.length; num++){
+        if(words[num].includes('https://knightsofacademia.com/weekly-sunday-newsletter')){
+          newsletterLink = words[num];
+          newsletterID = parseInt(words[num].substring(55, 57));
+          message.react('529488205473644544');
+          return;
+        }
+      }
+    }
+
     if (!message.content.startsWith(prefix) || !message.content.length > 1 || message.author.bot) {
       return;
     }
@@ -117,18 +196,146 @@ client.on('message', message => {
       return message.author.id == ownerID;
     }
 
-    //!raid, the link to provide a link to the Cuckoo Timer
-    if (cmd === 'raid' || cmd === 'r') {
+    if (cmd === 'p' || cmd === 'play'){
+      message.channel.send(":x: **Error:** I think you're trying to use the rythmBot. The command prefix for rythmbot has changed to `.`, so try typing `.p` or `.play` instead!");
+    }
+
+    //'Safe raid' - provide link to the timer
+    if (cmd === 'r') {
       message.channel.send("**RAAAAAAAAAAAAAAAAAAAID!** :crossed_swords:\nhttps://cuckoo.team/koa");
       message.delete();
     }
 
-    if (cmd === 'website' || cmd === 'w'){
-      message.channel.send("https://knightsofacademia.com");
+    //Provide link to the timer and tag pomodoro knights
+    if (cmd === 'raid') {
+      if(!message.member.roles.find("name", "pomodoro knights")){
+        message.channel.send(":x: **Error:** You need to be a Pomodoro Knight in order to be able to use this command. Feel free to sign up in <#489542065504518155>.");
+        return;
+      }
+      message.channel.send("**RAAAAAAAAAAAAAAAAAAAID!** :crossed_swords:\nCalling all <@&458729545298739200>. You know what time it is.\nhttps://cuckoo.team/koa");
+      message.delete();
+    }
+
+    //Show KOA Goodreads
+    if (cmd === 'goodreads' || cmd === 'gr'){
+      message.channel.send("The KOA Goodreads group can be found at: https://www.goodreads.com/group/show/756579-knights-of-academia");
+      message.delete();
+    }
+
+    //Show KOA Facebook
+    if (cmd === 'facebook' || cmd === 'fb'){
+      message.channel.send("The KOA Facebook group can be found at: https://www.facebook.com/groups/KOAFoundation/");
+      message.delete();
+    }
+
+    //Show KOA Website
+    if (cmd === 'website' || cmd === 'w' || cmd === 'koa'){
+      if(!args[0]){
+        message.channel.send("The KOA Website can be found at: https://knightsofacademia.com");
+        message.delete();
+        return;
+      }
+      args[0] = args[0].toLowerCase();
+      //Show various webpages
+      if (args[0] === 'cotw'){
+        message.channel.send("The KOA Challenges of the Week can be found at: https://knightsofacademia.com/category/cotw/");
+      } else if (args[0] === 'botm'){
+        message.channel.send("The KOA Books of the Month can be found at: https://knightsofacademia.com/category/botm/");
+      } else if (args[0] === 'guide'){
+        message.channel.send("The Extended Guide to KOA can be found at https://knightsofacademia.com/the-extended-guide-to-koa/");
+      } else if (args[0] === 'friends' || args[0] === 'ourfriends' || args[0] === 'partners' || (args[0] === 'our' && args[1] === 'friends')){
+        message.channel.send("The friends and partners of KOA can be found at https://knightsofacademia.com/our-friends/");
+      } else if (args[0] === 'hardmode' || args[0] === 'hard' || (args[0] === 'hard' && args[1] === 'mode')){
+        message.channel.send("An explanation of KOA's 'Hard mode' can be found at https://knightsofacademia.com/hard-mode/");
+      } else if (args[0] === 'aboutus' || args[0] === 'about' || (args[0] === 'about' && args[1] === 'us')){
+        message.channel.send("You can find out more about KOA at https://knightsofacademia.com/start-here/about-knights-of-academia/");
+      } else if (args[0] === 'guidelines' || args[0] === 'communityguidelines' || (args[0] === 'community' && args[0] === 'guidelines')){
+        message.channel.send("KOA's community guidelines can be found at: https://knightsofacademia.com/start-here/brief-community-guidelines/");
+      } else if (args[0] === 'articles'){
+        message.channel.send("The full list of KOA's articles can be found at: https://knightsofacademia.com/category/articles/");
+      } else if (args[0] === 'newsletter' || args[0] === 'news'){
+        message.channel.send("The full list of KOA's Sunday newsletters can be found at: https://knightsofacademia.com/category/announcements/");
+      } else if (args[0] === 'map'){
+        message.channel.send("The KOA World Map can be found at: https://knightsofacademia.com/guild-resources/world-map/");
+      }
+    }
+
+    //Show the KOA Map
+    if (cmd === 'map'){
+      message.channel.send("To view the KOA World Map, or add yourself to it, click here: https://www.google.com/maps/d/u/0/viewer?mid=1Y6hf-5PR-nO8b6u5wn44yc0CKvlsIypS&ll=20.702053475203503%2C4.100491500000089&z=2");
+      message.delete();
+    }
+
+    //Show this weeks Newsletter, and also update it
+    if (cmd === 'newsletter' || cmd === 'news'){
+      if(!args[0]){
+        message.channel.send(`This week's newsletter can be found at: ${newsletterLink}`);
+        return;
+      }
+
+      if(args[0].toLowerCase() === 'id'){
+        message.channel.send(`The current newsletter ID is: **${newsletterID}**.`);
+        return;
+      }
+
+      if(args[0].toLowerCase() === 'update'){
+        if(!isStaff(message.member)){
+          message.channel.send(":x: **Error:** You don't have permission to use this command.");
+          return;
+        }
+
+        if(!args[1]){
+          newsletterID++;
+          message.channel.send(`:white_check_mark: The new newsletter ID is **${newsletterID}**.`);
+          return;
+        }
+
+        if(isNaN(args[1])){
+          message.channel.send(":x: **Error:** Please only enter a number as the desired ID, e.g. `!newsletter update 15`");
+        } else {
+          newsletterID = parseInt(args[1]);
+          message.channel.send(`:white_check_mark: The new newsletter ID is **${newsletterID}**.`);
+        }
+
+      }
+
+    }
+
+    if (cmd === 'cotw'){
+      if(!args[0]){
+        message.channel.send(`The current Challenge of the Week can be found here: ${cotwLink}`);
+        return;
+      }
+      if(args[0].toLowerCase() === 'poll'){
+        message.channel.send(`The poll for next week's Challenge of the Week can be found here: ${cotwPoll}`);
+        return;
+      }
+    }
+
+    //Show KOA Guild
+    if (cmd === 'guild' || cmd === 'g'){
+      message.channel.send("The KOA Guild can be found at: https://habitica.com/groups/guild/e184b286-b369-46c9-ab55-054c3368af33");
+      message.delete();
+    }
+
+    if (cmd === 'invite' || cmd === 'discord'){
+      if(!args[0]){
+        message.channel.send("The invite link for the KOA main discord server is: https://discord.gg/Jca4trC");
+        message.delete();
+        return;
+      }
+
+      if (args[0].toLowerCase() === 'koai' || (args[0].toLowerCase() === 'koa' && args[1].toLowerCase() === 'international')){
+        message.channel.send("The invite link for the KOAI discord server is: https://discord.gg/Fuvabsm");
+        message.delete();
+      } else if (args[0].toLowerCase() === 'camelot'){
+        message.channel.send("The invite link for the KOA Camelot server is: https://discord.gg/wu3a6JA");
+        message.delete();
+      }
     }
 
     //Function to give clan list
-    if (cmd === 'clans'){
+    if (cmd === 'clans' || cmd === 'clanlist'){
       message.channel.send(":crossed_swords: **Here is our list of KOA Clans!** :crossed_swords:\n\n:small_orange_diamond: **The Round Table:** All things Hard Mode by Alex\n:small_orange_diamond: **Bards of Academia:** All things music by poss\n:small_orange_diamond: **The Fiction Faction:** Creative Writing & Story Telling by Blue Demon\n"
       + ":small_orange_diamond: **The Wolf Pack:** Data Science & all things STEM by QueenWolf\n:small_orange_diamond: **The Gathering:** Accountability by nurse4truth\n:small_orange_diamond: **The Clockwork Knights:** Productivity & Efficiency through the use of Systems by VonKobra\n:small_orange_diamond: **The Silver Tongues:** Language & Culture by MI6\n:small_orange_diamond: **The Students:** Academics & all things Education by Eric");
     }
@@ -139,35 +346,58 @@ client.on('message', message => {
     }
 
     if (cmd === 'opportunities'){
-      message.channel.send("We're always looking for new applicants to the leadership teams here on KOA and over on KOAI, so here's an idea of what roles you can apply for:\n\n__**KOA Staff Roles**__\n"
-      + ":small_orange_diamond: **Guardian:** The moderation team of KOA, responsible for keeping things civilised, helping out the community and welcoming new users to the fold.\n:small_orange_diamond: **Architect:** The minds that build KOA. These guys are responsible for planning and building new features, listening to suggestions from the community and doing their best to implement them in accordance with KOA's vision.\n"
-      + ":small_orange_diamond: **Website Team:** The team that works on the Knights of Academia website. If you've got any experience writing, editing or working in website development, this is your place to be.\n:small_orange_diamond: **Website Manager:** The leaders of the website team, responsible for staying on top of all facets of the website, and helping to make it flourish.\n"
-      + ":small_orange_diamond: **Sector Leader:** The leader of one of the Sectors of KOA. They aim to bring more attention to the Sector, get people talking and share relevant material and ideas.\n:small_orange_diamond: **Club Leader:** The leader of KOA special-interest groups called 'Clubs'. They facilitate discussion and engage with the other club members.\n\n"
-      + "__**KOAI Staff Roles**__\n:small_orange_diamond: **Keeper:** The moderation team of KOAI. Take care of all the staff and administrative matters, and also make sure people follow the rules.\n:small_orange_diamond: **Scholar:** If you're familiar with a language, and wouldn't mind helping out other people with it, or translating into or out of it, this is the role for you. Scholars are also present in staff discussions and assist the Keepers.\n\n"
+      message.channel.send("We're always looking for new applicants to the leadership teams here on KOA and over on KOAI, so here's an idea of what roles you can apply for:\n\n<:stamp:529484015946694690> __**KOA Staff Roles**__ <:stamp:529484015946694690>\n"
+      + ":small_orange_diamond: **Guardian:** The moderation team of KOA, responsible for keeping things civilised, helping out the community and welcoming new users to the fold.\n:small_orange_diamond: **Architect:** The minds that build KOA. Probably the hardest position to be accepted for, these guys are responsible for planning and building new features and the future of KOA.\n"
+      + ":small_orange_diamond: **Website Team:** The team that works on the KOA website. If you've got any experience writing, editing or working in website dev, this is your place to be.\n:small_orange_diamond: **Website Manager:** The leaders of the website team, responsible for staying on top of all facets of the website, and helping it to flourish.\n"
+      + ":small_orange_diamond: **Sector Leader:** The leaders of the Sectors of KOA. They aim to bring more attention to the Sector, get people talking and share relevant material and ideas.\n:small_orange_diamond: **Club Leader:** The leader of KOA special-interest groups called 'Clubs'. They facilitate discussion and engage with the other club members.\n\n"
+      + "<:stamp:529484015946694690> __**KOAI Staff Roles**__ <:stamp:529484015946694690>\n:small_orange_diamond: **Keeper:** The moderation team of KOAI. Take care of all the staff and administrative matters, and also make sure people follow the rules.\n:small_orange_diamond: **Scholar:** If you're familiar with a language, and wouldn't mind helping out other people with it, or translating into or out of it, this is the role for you. Scholars are also present in staff discussions and assist the Keepers.\n\n"
       + "All roles can be applied for using the appropriate form in #community-forms, and any questions about anything should be directed to your nearest Guardian. Good luck to all applicants! :tada:");
     }
+
     //Function to give application form for clans
     if (cmd === 'apply'){
       if(!args[0]){
-        message.channel.send("Please apply for a Clan with ``!apply <Clan Name>``.")
+        message.channel.send("Please apply for a Clan with `!apply <Clan Name>`.");
+        return;
       }
-      if (args[0] === 'theroundtable' || args[0] === 'trt' || args[0] === 'roundtable'  || args[0] === 'hardmode' || args[0] === 'hard' || args[0] === 'round' || ((args[0] === 'the') && (args[1] === 'round') && (args[2] === 'table'))){
+      args[0] = args[0].toLowerCase();
+      if (args[0] === 'theroundtable' || args[0] === 'trt' || args[0] === 'roundtable'  || args[0] === 'hardmode' || args[0] === 'hard' || args[0] === 'round' || ((args[0] === 'the') && (args[1].toLowerCase() === 'round') && (args[2].toLowerCase() === 'table'))){
         message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/m5onrVAaFc7RN1kg2");
-      } else if (args[0] === 'thebards' || args[0] === 'bards' || args[0] === 'bardsofacademia' || ((args[0] === 'the') && (args[1] === 'bards'))){
+      } else if (args[0] === 'thebards' || args[0] === 'bards' || args[0] === 'music' || args[0] === 'bardsofacademia' || ((args[0] === 'the') && (args[1].toLowerCase() === 'bards'))){
         message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/3csyULhB5aqCHjoB3");
-      } else if (args[0] === 'thefictionfaction' || args[0] === 'ff' || args[0] === 'fictionfaction' || args[0] === 'fiction' || ((args[0] === 'the') && (args[1] === 'fiction') && (args[2] === 'faction'))){
+      } else if (args[0] === 'thefictionfaction' || args[0] === 'ff' || args[0] === 'fictionfaction' || args[0] === 'writing' || args[0] === 'fiction' || ((args[0] === 'the') && (args[1].toLowerCase() === 'fiction') && (args[2].toLowerCase() === 'faction'))){
         message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://docs.google.com/document/d/1KAPSiUMTpg3a6lzWCAJuqSxrA9-zzldYn_f35DJ_xXw/edit?usp=sharing");
-      } else if (args[0] === 'thewolfpack' || args[0] === 'wolfpack' || args[0] === 'twp' || ((args[0] === 'the') && (args[1] === 'wolf') && (args[2] === 'pack'))){
+      } else if (args[0] === 'thewolfpack' || args[0] === 'wolfpack' || args[0] === 'twp' || args[0] === 'stem' || ((args[0] === 'the') && (args[1].toLowerCase() === 'wolf') && (args[2].toLowerCase() === 'pack'))){
         message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/QJDWzppdgGsniPWG2");
-      } else if (args[0] === 'thegathering' || args[0] === 'gathering' || ((args[0] === 'the') && (args[1] === 'gathering'))){
+      } else if (args[0] === 'thegathering' || args[0] === 'gathering' || args[0] === 'accountability' || ((args[0] === 'the') && (args[1].toLowerCase() === 'gathering'))){
         message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/69tZ0ovv6Asd32zg2");
-      } else if (args[0] === 'theclockworkknights' || args[0] === 'clockwork' || args[0] === 'clockwork knights' || ((args[0] === 'the') && (args[1] === 'clockwork') && (args[2] === 'knights'))){
+      } else if (args[0] === 'theclockworkknights' || args[0] === 'clockwork' || args[0] === 'systems' || args[0] === 'clock' || ((args[0] === 'the') && (args[1].toLowerCase() === 'clockwork') && (args[2].toLowerCase() === 'knights'))){
         message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/5klpWjPVeCkRfdWF2");
-      } else if (args[0] === 'thesilvertongues' || args[0] === 'silvertongues' || args[0] === 'silver' || args[0] === 'tongues' || ((args[0] === 'the') && (args[1] === 'silver') && (args[2] === 'tongues'))){
+      } else if (args[0] === 'thesilvertongues' || args[0] === 'silvertongues' || args[0] === 'silver' || args[0] === 'tongues' || args[0] === 'language' || ((args[0] === 'the') && (args[1].toLowerCase() === 'silver') && (args[2].toLowerCase() === 'tongues'))){
         message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/GcPz3zG8kmh3ZJBw1");
-      } else if (args[0] === 'thestudents' || args[0] === 'students' || args[0] === 'study' || args[0] === 'studentsofkoa' || ((args[0] === 'the') && (args[1] === 'students'))){
+      } else if (args[0] === 'thestudents' || args[0] === 'students' || args[0] === 'study' || args[0] === 'studentsofkoa' || args[0] === 'academic' || ((args[0] === 'the') && (args[1].toLowerCase() === 'students'))){
         message.channel.send(":heavy_check_mark: **Fill out your user ID to receive an invite!**\n\n`Average Response Time - 24 hours or less`\n\nhttps://goo.gl/forms/mwHlk2Kj3kfC9Bfw1");
       }
+    }
+
+    //!search, the google search command
+    if (cmd === 'search'){
+      if(!args[0]){
+        message.channel.send("Type `!search <search terms>` to google something!");
+        return;
+      }
+
+      var link = 'https://www.google.com/search?q=';
+      var searchTerms = message.content.trim().substring(prefix.length + 7);
+      for(var num = 0; num < args.length; num++){
+        if(num === 0){
+          link = link + args[num];
+        } else {
+          link = link + '%20' + args[num];
+        }
+      }
+
+      message.channel.send(`To Google-Search **${searchTerms}** click this link: ${link}.`);
     }
 
     //!info, the KOA Glossary
@@ -182,21 +412,21 @@ client.on('message', message => {
         message.channel.send("Habitica is an application and site that allows you to track your daily tasks, habits and to-do's,"
         + " but organises them into an RPG game to give you a bit more incentive to get things done."
         + " You can join parties and go on quests, and most of the people here use it for self-improvement and keeping track of things.");
-      } else if (args[0] === 'clan' || args[0] === 'clans'){
+      } else if ((args[0] === 'clan' || args[0] === 'clans') && (!args[1])){
         message.channel.send("A KOA Clan is essentially just a Habitica party that is officially endorsed by the Knights of Academia."
         + " They have a party chat on Habitica, and also a Clan channel on the discord server."
         + " As per a normal Habitica party, there is a maximum of 30 members per Clan.");
       } else if (args[0] === 'guardian' || args[0] === 'guardians'){
         message.channel.send("The Guardians are the moderation team of KOA, responsible for keeping things civilised, helping out the community and welcoming new users to the fold."
-        + " The current Guardians are:\n:small_orange_diamond: **Austin**\n:small_orange_diamond: **Blue Demon**\n:small_orange_diamond: **Eric**\n:small_orange_diamond: **hannahananaB**\n:small_orange_diamond: **mi6blk**\n:small_orange_diamond: **poss_**\n:small_orange_diamond: **Queen Wolf**");
+        + " The current Guardians are:\n:small_orange_diamond: **Austin**\n:small_orange_diamond: **Chel**\n:small_orange_diamond: **Eric**\n:small_orange_diamond: **poss_**\n:small_orange_diamond: **Queen Wolf**");
       } else if (args[0] === 'diva'){
         message.channel.send("Heresy. No doubt about it.");
-      } else if (args[0] === 'botm' || ((args[0] === 'book') && (args[1] === 'of') && (args[2] === 'the') && (args[3] === 'month'))){
+      } else if (args[0] === 'botm' || ((args[0] === 'book') && (args[1].toLowerCase() === 'of') && (args[2].toLowerCase() === 'the') && (args[3].toLowerCase() === 'month'))){
         message.channel.send(":book:  **Book of the Month** :book:\n"
         + "The Book of the Month (BOTM) activity involves our BOTM Moderator posting polls for people to vote on what they want the next month's book to be,"
         + " that every member of the club will endeavour to read over the course of the month. Look forward to interesting discussion and listening to other people's perspectives on the book!"
         + " Feel free to check out #book-of-the-month for more info.")
-      } else if (args[0] === 'cotw' || ((args[0] === 'challenge') && (args[1] === 'of') && (args[2] === 'the') && (args[3] === 'week'))){
+      } else if (args[0] === 'cotw' || ((args[0] === 'challenge') && (args[1].toLowerCase() === 'of') && (args[2].toLowerCase() === 'the') && (args[3].toLowerCase() === 'week'))){
         message.channel.send(":bow_and_arrow: **Challenge of the Week** :bow_and_arrow:\n"
         + "The Challenge of the Week (COTW) is a Habitica challenge voted on by the community, that changes every week."
         + " This can be a challenge that can ask you to do anything; make a reading habit, exercise every day, stay hydrated - but it's all done in the name of self-improvement and building yourself up."
@@ -218,7 +448,7 @@ client.on('message', message => {
       } else if (args[0] === 'poss'){
         message.channel.send("If I could speak, I'd want a voice like poss.");
       } else if (args[0] === 'alex'){
-        message.channel.send("Not quite Alexander the Great, but still pretty good.");
+        message.channel.send("Word on the street says that before Alex started KOA, he used to run his own clothing manfucturing and distribution business. Honestly, I never would have guessed.");
       } else if (args[0] === 'pomodoro' || args[0] === 'pom'){
         message.channel.send("A 'pom' or 'pomodoro' is simply a focused work session of 25 minutes. The 'Pomodoro Technique' involves alternating work periods of 25 minutes, with rest periods of 5 minutes. Every 4 work sessions, it's recommended to take a longer break of about 15 minutes.");
       } else if (args[0] === 'kyr\'amlaar' || args[0] === 'kyramlar' || args[0] === 'kyramlaar'){
@@ -249,26 +479,66 @@ client.on('message', message => {
       } else if (args[0] === 'voting'){
         message.channel.send("Voting on KOA is usually done through the use of reactions in #voting-hall. Polls are also released for the Challenge of the Week and Book of the Month, and when they happen, the link to them will be provided with the post.");
       } else if (args[0] === 'ash'){
-        message.channel.send("If she ever tells you how old she is, feel blessed.");
+        message.channel.send("Bam in a can! *Oh damn oh man!*");
       } else if (args[0] === 'rebel'){
         message.channel.send(":octopus:");
       } else if (args[0] === 'rotmg'){
         message.channel.send("Realm of the Mad God. A online multiplayer game that some members occasionally play together.");
       } else if (args[0] === 'opportunities'){
-        message.channel.send("We're always looking for new applicants to the leadership teams here on KOA and over on KOAI, so here's an idea of what roles you can apply for:\n\n__**KOA Staff Roles**__\n"
-        + ":small_orange_diamond: **Guardian:** The moderation team of KOA, responsible for keeping things civilised, helping out the community and welcoming new users to the fold.\n:small_orange_diamond: **Architect:** The minds that build KOA. These guys are responsible for planning and building new features, listening to suggestions from the community and doing their best to implement them in accordance with KOA's vision.\n"
-        + ":small_orange_diamond: **Website Team:** The team that works on the Knights of Academia website. If you've got any experience writing, editing or working in website development, this is your place to be.\n:small_orange_diamond: **Website Manager:** The leaders of the website team, responsible for staying on top of all facets of the website, and helping to make it flourish.\n"
-        + ":small_orange_diamond: **Sector Leader:** The leader of one of the Sectors of KOA. They aim to bring more attention to the Sector, get people talking and share relevant material and ideas.\n:small_orange_diamond: **Club Leader:** The leader of KOA special-interest groups called 'Clubs'. They facilitate discussion and engage with the other club members.\n\n"
-        + "__**KOAI Staff Roles**__\n:small_orange_diamond: **Keeper:** The moderation team of KOAI. Take care of all the staff and administrative matters, and also make sure people follow the rules.\n:small_orange_diamond: **Scholar:** If you're familiar with a language, and wouldn't mind helping out other people with it, or translating into or out of it, this is the role for you. Scholars are also present in staff discussions and assist the Keepers.\n\n"
+        message.channel.send("We're always looking for new applicants to the leadership teams here on KOA and over on KOAI, so here's an idea of what roles you can apply for:\n\n<:stamp:529484015946694690> __**KOA Staff Roles**__ <:stamp:529484015946694690>\n"
+        + ":small_orange_diamond: **Guardian:** The moderation team of KOA, responsible for keeping things civilised, helping out the community and welcoming new users to the fold.\n:small_orange_diamond: **Architect:** The minds that build KOA. Probably the hardest position to be accepted for, these guys are responsible for planning and building new features and the future of KOA.\n"
+        + ":small_orange_diamond: **Website Team:** The team that works on the KOA website. If you've got any experience writing, editing or working in website dev, this is your place to be.\n:small_orange_diamond: **Website Manager:** The leaders of the website team, responsible for staying on top of all facets of the website, and helping it to flourish.\n"
+        + ":small_orange_diamond: **Sector Leader:** The leaders of the Sectors of KOA. They aim to bring more attention to the Sector, get people talking and share relevant material and ideas.\n:small_orange_diamond: **Club Leader:** The leader of KOA special-interest groups called 'Clubs'. They facilitate discussion and engage with the other club members.\n\n"
+        + "<:stamp:529484015946694690> __**KOAI Staff Roles**__ <:stamp:529484015946694690>\n:small_orange_diamond: **Keeper:** The moderation team of KOAI. Take care of all the staff and administrative matters, and also make sure people follow the rules.\n:small_orange_diamond: **Scholar:** If you're familiar with a language, and wouldn't mind helping out other people with it, or translating into or out of it, this is the role for you. Scholars are also present in staff discussions and assist the Keepers.\n\n"
         + "All roles can be applied for using the appropriate form in #community-forms, and any questions about anything should be directed to your nearest Guardian. Good luck to all applicants! :tada:");
       } else if (args[0] === 'events'){
         message.channel.send(":small_orange_diamond: **KOA EVENTS 2019** :small_orange_diamond:\n**January:** Fireside Chat\n**February:** Fireside Chat (TBA)\n**March:** Fireside Chat (TBA), Town Hall Meeting\n**April:** Fireside Chat (TBA)\n**May:** Fireside Chat (TBA)\n**June:** Fireside Chat (TBA), Town Hall Meeting\n"
         + "**July:** Fireside Chat (TBA)\n**August:** Fireside Chat (TBA)\n**September:** Fireside Chat (TBA) Town Hall Meeting\n**October:** Fireside Chat (TBA)\n**November:** Fireside Chat (TBA)\n**December:** KOA Secret Santa, YearCompass, Fireside Chat (TBA), Town Hall Meeting");
+      } else if (args[0] === 'hardmode' || (args[0] === 'hard' && args[1].toLowerCase() === 'mode')){
+        message.channel.send("Hard mode is a 'playstyle' of Habitica that aims to make it more challenging to play, and more rewarding when you succeed. Use `!KOA hard mode` to learn more about it!");
+      } else if (args[0] === 'x'){
+        message.channel.send("Legend has it that this man was the first Jurgandy.");
+      } else if (args[0] === 'doomflake'){
+        message.channel.send("Legend has it Doomflake is still in the <#382921625768689665>.");
+      } else if (args[0] === 'texas'){
+        message.channel.send("Home of the lovely QueenWolf! :cowboy:");
+      } else if (args[0] === 'koai'){
+        message.channel.send("The sister-server of KOA, KOA International! There's more of a focus on different languages and different cultures there. Feel free to grab a link to it with `!invite KOAI` or in <#403260793644384266>!");
+      } else if (args[0] === 'eko'){
+        message.channel.send("Fun fact: Eko was actually Alex's first party leader!");
+      } else if (args[0] === 'bunbun'){
+        message.channel.send("Bunbun is the name of Kayla's pet bunny! :rabbit2:");
+      } else if (args[0] === 'afk'){
+        message.channel.send("Please don't use AFK unless there's a reason to, Austin.");
+      } else if (args[0] === 'weasel'){
+        message.channel.send("The worst thing you can be. Never be a weasel.");
+      } else if (args[0] === 'mcheloous'){
+        message.channel.send("If you haven't laughed to her saying *'fat rip'* in her accent, are you really a member of KOA? :rofl:");
+      } else if (args[0] === 'dream'){
+        message.channel.send("*You mustn't be afraid to dream a little bigger.*");
+      } else if (args[0] === 'anny'){
+        message.channel.send("```Welcome! I'm Anny, one of the Guardians and the leader of KOA: International! Would you mind sharing a bit about yourself and why you decided to join us?```");
+      } else if (args[0] === 'townhall' || args[0] == 'th' || (args[0] === 'town' && args[1].toLowerCase() === 'hall')){
+        message.channel.send("The Town Hall meetings are the quarterly meetings of KOA, where we gather in a voice call and a text channel to discuss changes that will be made to the server or to the organisation, and also get feedback on previous ideas that have been implemented. The time for the event will be sorted through a poll beforehand, and anyone is welcome to attend!");
+      } else if (args[0] === '⚙'){
+        message.channel.send("VonKobra, the leader of the ClockWork Knights. Wonder how hard it is to grind his gears?");
+      } else if (args[0] === 'ershy'){
+        message.channel.send("What *does* ershy taste like? Will the world ever know?");
+      } else if (args[0] === 'jurgandy'){
+        message.channel.send("The man, the myth, the legend.");
+      } else if (args[0] === 'jojo'){
+        message.channel.send("Stand Proud! <:violation:529488850385502219>");
+      } else if (args[0] === 'camelot'){
+        message.channel.send("The place for memes, ranting, debates, and pretty much anything else that might not be allowed in KOA Main. Feel free to grab a link to it with `!invite Camelot` or in <#403260793644384266>!");
+      } else if (args[0] === 'demon'){
+        message.channel.send("Most people don't know this, but Blue Demon is actually just one member of an entire coloured-demon family!")
+      } else if (args[0] === 'cw' || args[0] === 'clanwar' || (args[0] === 'clan' && args[1].toLowerCase() === 'war')){
+        message.channel.send("Clan Wars are a month-long activity that involve the Clans of KOA battling it out in a competition of some sort. During October 2018, the Clan War was the Pomodoro Challenge, and the winning clan was the Fiction Faction. In order to compete you have to be part of a clan, so make sure you sign up for one using `!apply`!")
       }
     }
 
     //!pom/!p, to start a pomodoro session
-    if (cmd === 'p' || cmd === 'pomodoro') {
+    if (cmd === 'pomodoro') {
       if(pomRunning){
         message.channel.send(':x: **Error:** There is already an active pomodoro!');
         return;
@@ -363,7 +633,7 @@ client.on('message', message => {
     }
 
     //!coinflip, to give you a 50/50 option when you gotta make a tough call
-    if(cmd === 'coinflip' || cmd === 'flipcoin'){
+    if (cmd === 'coinflip' || cmd === 'flipcoin'){
       if(Math.random() < 0.5){
         message.channel.send(message.author + " flipped...\n\n**HEADS!**");
       } else {
@@ -371,11 +641,35 @@ client.on('message', message => {
       }
     }
 
+    if (cmd === 'choose' || cmd === 'pick'){
+      var data = message.content.substring(prefix.length + cmd.length + 1);
+      var option = data.trim().split(',');
+      if(!option[0]){
+        message.channel.send(":x: **Error:** To use this command, type `!choose <option 1>, <option 2>, etc` **e.g.** `!choose eat, sleep, work, party`.");
+        return;
+      }
+
+      for(var num = 0; num < option.length; num++){
+        option[num] = option[num].trim();
+      }
+
+      var select = Math.floor(Math.random()*option.length);
+      message.channel.send(`By decree of <@532033195688984598>,\n\n**${option[select]}.**`);
+
+    }
+
     //AFK command
-    if(cmd === 'afk'){
+    if (cmd === 'afk'){
       //TODO this command
     }
 
+    if (cmd === 'porn'){
+      message.channel.send("<:wat:529484506856423429>");
+    }
+
+    if (cmd === 'stamp'){
+      message.channel.send("<:stamp:530938614561898506>");
+    }
     //----------------------------------------------------------------
     //            POM-COUNTER/LEADERBOARD COMMANDS
     //----------------------------------------------------------------
@@ -517,7 +811,7 @@ client.on('message', message => {
                     if (counters[counterName][args[1]]) {
                         message.channel.send(args[1] + ' : ' + counters[counterName][args[1]]);
                     }
-                } else if (args[0] == 'leaderboard') {
+                } else if (args[0] == 'leaderboard' || args[0] == 'leadership') {
                     var sortable = [];
 
                     for (var key in counters[counterName].leaderboard) {
@@ -559,12 +853,12 @@ client.on('message', message => {
 
       if(args[0] === 'display' || args[0] === 'show'){
         if(!args[1] || args[1] === 'help'){
-          message.channel.send("Type ``>cal display <X>`` to show the upcoming X events in the calendar.\n**e.g.** To show the first 5 events, ``>cal display 5``.");
+          message.channel.send("Type ``!cal display <X>`` to show the upcoming X events in the calendar.\n**e.g.** To show the first 5 events, ``!cal display 5``.");
           return;
         }
 
         if(isNaN(args[1])){
-          message.channel.send(":x: **Error:** Invalid input. Please make sure you enter a number, after the display, e.g. ``>cal display 5``.");
+          message.channel.send(":x: **Error:** Invalid input. Please make sure you enter a number, after the display, e.g. ``!cal display 5``.");
           return;
         }
 
@@ -606,6 +900,12 @@ client.on('message', message => {
           }
         });
       } else if(args[0] === 'add'){
+
+        if(!isStaff(message.member)){
+          message.channel.send(":x: **Error:** You don't have permission to use this command.");
+          return;
+        }
+
         if(!args[1] || args[1] === 'help'){
           message.channel.send('**:calendar_spiral: CALENDAR ADDING FUNCTION :calendar_spiral:**\n\n'
           + ':small_orange_diamond:To make an **all-day event:**\n``!cal add <Event Name>, YYYY, MM, DD``\n**e.g.** To make an event for the COTW Poll opening on the 17th of January 2019:\n ``!cal add COTW Polls Open, 2019, 01, 17``\n\n'
@@ -691,9 +991,9 @@ client.on('message', message => {
 // Create an event listener for new guild members
 client.on('guildMemberAdd', member => {
   //Adding initiate role
-  member.addRole('535256871376781342');
+  member.addRole('459085352917925908');
   // Send the message to a designated channel on a server:
-  const channel = member.guild.channels.find(ch => ch.name === 'erics-laboratory');
+  const channel = member.guild.channels.find(ch => ch.name === 'citadel');
   // Do nothing if the channel wasn't found on this server
   if (!channel) return;
   // Send the message, mentioning the member
@@ -981,4 +1281,8 @@ function listEvents(auth) {
       console.log('No upcoming events found.');
     }
   });
+}
+
+function addReaction(message, reaction){
+  message.react(reaction);
 }
